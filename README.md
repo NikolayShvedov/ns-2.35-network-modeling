@@ -30,3 +30,14 @@ TCL network simulation scripts in ns 2.35
 
 
 ![2 2](https://user-images.githubusercontent.com/52162935/161580630-19afa77f-d537-4982-91cd-e437d3b883ee.png)
+
+
+
+
+
+
+
+
+
+
+![3 2](https://user-images.githubusercontent.com/52162935/161627590-00017627-b205-4ee2-bca9-d2d38bb597a7.png)
