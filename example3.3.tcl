@@ -22,51 +22,51 @@ set simulation_time 60
       exit 0
   }
 
-  set n0     [$ns node]
-  set n1     [$ns node]
-  set n2     [$ns node]
-  set n3     [$ns node]
-  set n4     [$ns node]
-  set n5     [$ns node]
-  set n6     [$ns node]
+  set s1     [$ns node]
+  set s2     [$ns node]
+  set e1     [$ns node]
+  set core   [$ns node]
+  set e2     [$ns node]
+  set dest1  [$ns node]
+  set dest2  [$ns node]
 
   $ns color 1  Green
   $ns color 2  Red
 
-#   n0            n5
-#     \          / 
-#      n2--n3--n4
-#     /          \
-#   n1            n6
+#   s1             dest1
+#     \           / 
+#      e1--core--e2
+#     /           \
+#   s2             dest2
 #
      
-  $ns duplex-link  $n0 $n2 2Mb 15ms DropTail
-  $ns duplex-link  $n1 $n2 2Mb 15ms DropTail
+  $ns duplex-link  $s1 $e1 2Mb 15ms DropTail
+  $ns duplex-link  $s2 $e1 2Mb 15ms DropTail
 
-  $ns simplex-link $n2 $n3 2Mb 15ms dsRED/edge
-  $ns simplex-link $n3 $n2 2Mb 15ms dsRED/core 
-  $ns simplex-link $n3 $n4 409600 10ms dsRED/core 
-  $ns simplex-link $n4 $n3 409600 10ms dsRED/edge
+  $ns simplex-link $e1 $core 2Mb 15ms dsRED/edge
+  $ns simplex-link $core $e1 2Mb 15ms dsRED/core 
+  $ns simplex-link $core $e2 409600 10ms dsRED/core 
+  $ns simplex-link $e2 $core 409600 10ms dsRED/edge
 
-  $ns duplex-link  $n4 $n5 2Mb 60ms DropTail
-  $ns duplex-link  $n4 $n6 409600 60ms DropTail
+  $ns duplex-link  $e2 $dest1 2Mb 60ms DropTail
+  $ns duplex-link  $e2 $dest2 409600 60ms DropTail
 
-  $ns duplex-link-op $n0     $n2 orient right-down
-  $ns duplex-link-op $n1     $n2 orient right-up
-  $ns duplex-link-op $n2     $n3 orient right
-  $ns duplex-link-op $n3     $n4 orient right
-  $ns duplex-link-op $n4     $n5 orient right-up
-  $ns duplex-link-op $n4     $n6 orient right-down
+  $ns duplex-link-op $s1     $e1 orient right-down
+  $ns duplex-link-op $s2     $e1 orient right-up
+  $ns duplex-link-op $e1     $core orient right
+  $ns duplex-link-op $core     $e2 orient right
+  $ns duplex-link-op $e2     $dest1 orient right-up
+  $ns duplex-link-op $e2     $dest2 orient right-down
 
-  $ns queue-limit $n3 $n4 100
-  $ns queue-limit $n4 $n5 100
+  $ns queue-limit $core $e2 100
+  $ns queue-limit $e2 $dest1 100
 
-  $ns duplex-link-op $n3 $n4 queuePos 0.5
+  $ns duplex-link-op $core $e2 queuePos 0.5
 
-  set qE1C [[$ns link $n2 $n3] queue]  
-  set qE2C [[$ns link $n4 $n3] queue]  
-  set qCE1 [[$ns link $n3 $n2] queue]  
-  set qCE2 [[$ns link $n3 $n4] queue]  
+  set qE1C [[$ns link $e1 $core] queue]  
+  set qE2C [[$ns link $e2 $core] queue]  
+  set qCE1 [[$ns link $core $e1] queue]  
+  set qCE2 [[$ns link $core $e2] queue]  
 
   $qE1C meanPktSize 1000
   $qE1C set numQueues_ 3
@@ -74,8 +74,8 @@ set simulation_time 60
   $qE1C setSchedularMode RR 
   $qE1C setMREDMode RIO-C
   
-  $qE1C addPolicyEntry [$n0 id] -1 TokenBucket 18  5000000  4000  
-  $qE1C addPolicyEntry [$n1 id] -1 TokenBucket 26  5000000  4000
+  $qE1C addPolicyEntry [$s1 id] -1 TokenBucket 18  5000000  4000  
+  $qE1C addPolicyEntry [$s2 id] -1 TokenBucket 26  5000000  4000
 
   $qE1C addPolicerEntry TokenBucket 18 20  
   $qE1C addPolicerEntry TokenBucket 26 28  
@@ -105,8 +105,8 @@ set simulation_time 60
   $qE2C setSchedularMode RR 
   $qE2C setMREDMode RIO-C
   
-  $qE2C addPolicyEntry -1 [$n0 id] TokenBucket 18  5000000  4000  
-  $qE2C addPolicyEntry -1 [$n1 id] TokenBucket 26  5000000  4000
+  $qE2C addPolicyEntry -1 [$s1 id] TokenBucket 18  5000000  4000  
+  $qE2C addPolicyEntry -1 [$s2 id] TokenBucket 26  5000000  4000
 
   $qE2C addPolicerEntry TokenBucket 18 20  
   $qE2C addPolicerEntry TokenBucket 26 28  
@@ -184,23 +184,23 @@ set simulation_time 60
   set udp0 [new Agent/UDP]
   $udp0 set class_ 1 
   set cbr0 [new Application/Traffic/CBR]
-  $ns attach-agent $n0 $udp0
+  $ns attach-agent $s1 $udp0
   $cbr0 attach-agent $udp0
   $cbr0 set packetSize_ 1000
   $cbr0 set interval_ 0.005
   set null0 [new Agent/Null]
-  $ns attach-agent $n5 $null0
+  $ns attach-agent $dest1 $null0
   $ns connect $udp0 $null0
 
   set udp1 [new Agent/UDP]
   $udp1 set class_ 2 
   set cbr1 [new Application/Traffic/CBR]
-  $ns attach-agent $n1 $udp1
+  $ns attach-agent $s2 $udp1
   $cbr1 attach-agent $udp1
   $cbr1 set packetSize_ 1000
   $cbr1 set interval_ 0.005
   set null1 [new Agent/Null]
-  $ns attach-agent $n6 $null1
+  $ns attach-agent $dest2 $null1
   $ns connect $udp1 $null1
 
 proc ds_stats {} {
