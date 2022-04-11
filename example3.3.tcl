@@ -187,8 +187,8 @@ set simulation_time 60
   $ns attach-agent $n0 $udp0
   $cbr0 attach-agent $udp0
   $cbr0 set packetSize_ 1000
-  $cbr0 set rate_ 320000
-  set null0 [new Agent/LossMonitor]
+  $cbr0 set interval_ 0.005
+  set null0 [new Agent/Null]
   $ns attach-agent $n5 $null0
   $ns connect $udp0 $null0
 
@@ -198,8 +198,8 @@ set simulation_time 60
   $ns attach-agent $n1 $udp1
   $cbr1 attach-agent $udp1
   $cbr1 set packetSize_ 1000
-  $cbr1 set rate_ 320000
-  set null1 [new Agent/LossMonitor]
+  $cbr1 set interval_ 0.005
+  set null1 [new Agent/Null]
   $ns attach-agent $n6 $null1
   $ns connect $udp1 $null1
 
@@ -236,3 +236,5 @@ proc queue_stats {queue} {
   $ns at $simulation_time  "$cbr1 stop"
   $ns at [expr $simulation_time + 5] "ds_stats"
   $ns at [expr $simulation_time + 5] "finish"
+
+ $ns run
